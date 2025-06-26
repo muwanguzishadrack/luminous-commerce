@@ -94,7 +94,7 @@ export const ResetPasswordForm: React.FC = () => {
           <div className="pt-4">
             <Link
               to="/login"
-              className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500"
+              className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80"
             >
               Sign in now
             </Link>
@@ -122,7 +122,7 @@ export const ResetPasswordForm: React.FC = () => {
             </Link>
             <Link
               to="/login"
-              className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500"
+              className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to sign in
@@ -152,7 +152,7 @@ export const ResetPasswordForm: React.FC = () => {
             type="password"
             autoComplete="new-password"
             {...register('newPassword')}
-            className={errors.newPassword ? 'border-red-500' : ''}
+            className={`focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${errors.newPassword ? 'border-red-500' : ''}`}
           />
           {errors.newPassword && (
             <p className="text-sm text-red-600">{errors.newPassword.message}</p>
@@ -166,7 +166,7 @@ export const ResetPasswordForm: React.FC = () => {
             type="password"
             autoComplete="new-password"
             {...register('confirmPassword')}
-            className={errors.confirmPassword ? 'border-red-500' : ''}
+            className={`focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${errors.confirmPassword ? 'border-red-500' : ''}`}
           />
           {errors.confirmPassword && (
             <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
@@ -185,7 +185,7 @@ export const ResetPasswordForm: React.FC = () => {
         <div className="text-center">
           <Link
             to="/login"
-            className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500"
+            className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to sign in

@@ -6,6 +6,8 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { LoginForm } from './components/auth/LoginForm';
 import { RegisterForm } from './components/auth/RegisterForm';
 import { JoinOrganizationForm } from './components/auth/JoinOrganizationForm';
+import { ForgotPasswordForm } from './components/auth/ForgotPasswordForm';
+import { ResetPasswordForm } from './components/auth/ResetPasswordForm';
 import { DashboardLayout } from './components/layout/dashboard-layout';
 import { Toaster } from './components/ui/sonner';
 import {
@@ -74,6 +76,8 @@ export default function App() {
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/join-organization" element={<JoinOrganizationForm />} />
+          <Route path="/forgot-password" element={<ForgotPasswordForm />} />
+          <Route path="/reset-password" element={<ResetPasswordForm />} />
           
           {/* Protected Routes */}
           <Route 

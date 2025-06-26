@@ -65,7 +65,7 @@ export const ForgotPasswordForm: React.FC = () => {
           <div className="pt-4">
             <Link
               to="/login"
-              className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500"
+              className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to sign in
@@ -95,7 +95,7 @@ export const ForgotPasswordForm: React.FC = () => {
             type="email"
             autoComplete="email"
             {...register('email')}
-            className={errors.email ? 'border-red-500' : ''}
+            className={`focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${errors.email ? 'border-red-500' : ''}`}
           />
           {errors.email && (
             <p className="text-sm text-red-600">{errors.email.message}</p>
@@ -114,7 +114,7 @@ export const ForgotPasswordForm: React.FC = () => {
         <div className="text-center">
           <Link
             to="/login"
-            className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500"
+            className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to sign in
