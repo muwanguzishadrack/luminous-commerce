@@ -43,14 +43,14 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string):
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
         .header { background-color: #2d5a5a; color: white; padding: 20px; text-align: center; }
         .content { padding: 20px; background-color: #f9f9f9; }
-        .button { display: inline-block; padding: 12px 24px; background-color: #2d5a5a; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #2d5a5a; color: white !important; text-decoration: none; border-radius: 5px; margin: 20px 0; }
         .footer { text-align: center; font-size: 12px; color: #666; margin-top: 20px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>Luminous CRM</h1>
+          <h1>Luminous</h1>
           <h2>Password Reset Request</h2>
         </div>
         <div class="content">
@@ -64,7 +64,7 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string):
           <p>If you didn't request a password reset, you can safely ignore this email.</p>
         </div>
         <div class="footer">
-          <p>This email was sent from Luminous CRM. Please do not reply to this email.</p>
+          <p>This email was sent from Luminous. Please do not reply to this email.</p>
         </div>
       </div>
     </body>
@@ -72,7 +72,7 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string):
   `;
 
   const textContent = `
-    Luminous CRM - Password Reset Request
+    Luminous - Password Reset Request
 
     Hello,
 
@@ -86,12 +86,12 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string):
     If you didn't request a password reset, you can safely ignore this email.
 
     ---
-    This email was sent from Luminous CRM. Please do not reply to this email.
+    This email was sent from Luminous. Please do not reply to this email.
   `;
 
   await sendEmail({
     to: email,
-    subject: 'Password Reset Request - Luminous CRM',
+    subject: 'Password Reset Request - Luminous',
     text: textContent,
     html: htmlContent,
   });
@@ -112,7 +112,7 @@ export const sendWelcomeEmail = async (email: string, firstName: string): Promis
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
         .header { background-color: #2d5a5a; color: white; padding: 20px; text-align: center; }
         .content { padding: 20px; background-color: #f9f9f9; }
-        .button { display: inline-block; padding: 12px 24px; background-color: #2d5a5a; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #2d5a5a; color: white !important; text-decoration: none; border-radius: 5px; margin: 20px 0; }
         .footer { text-align: center; font-size: 12px; color: #666; margin-top: 20px; }
       </style>
     </head>
@@ -130,7 +130,7 @@ export const sendWelcomeEmail = async (email: string, firstName: string): Promis
           <p>Thank you for choosing Luminous CRM!</p>
         </div>
         <div class="footer">
-          <p>This email was sent from Luminous CRM. Please do not reply to this email.</p>
+          <p>This email was sent from Luminous. Please do not reply to this email.</p>
         </div>
       </div>
     </body>
@@ -151,7 +151,7 @@ export const sendWelcomeEmail = async (email: string, firstName: string): Promis
     Thank you for choosing Luminous CRM!
 
     ---
-    This email was sent from Luminous CRM. Please do not reply to this email.
+    This email was sent from Luminous. Please do not reply to this email.
   `;
 
   await sendEmail({
