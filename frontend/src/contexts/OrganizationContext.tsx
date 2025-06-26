@@ -40,8 +40,6 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   const { isAuthenticated, user } = useAuth();
   const queryClient = useQueryClient();
   
-  // Check if auth is disabled for development
-  const isAuthDisabled = import.meta.env.VITE_DISABLE_AUTH === 'true';
 
   // Fetch current organization
   const {
@@ -52,7 +50,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   } = useQuery({
     queryKey: ['organization', 'current'],
     queryFn: OrganizationService.getCurrentOrganization,
-    enabled: !isAuthDisabled && isAuthenticated && !!user?.organizationId,
+    enabled: isAuthenticated && !!user?.organizationId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -64,7 +62,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   } = useQuery({
     queryKey: ['organization', 'stats'],
     queryFn: OrganizationService.getStats,
-    enabled: !isAuthDisabled && isAuthenticated && !!user?.organizationId,
+    enabled: isAuthenticated && !!user?.organizationId,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
@@ -124,43 +122,12 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
     queryClient.invalidateQueries({ queryKey: ['organization', 'stats'] });
   };
 
-  // Create mock organization data for development
-  const mockOrganization: OrganizationWithUsers | null = isAuthDisabled ? {
-    id: 'dev-org-1',
-    name: 'Dev Business',
-    slug: 'dev-business',
-    currency: 'UGX',
-    phone: '+256700000000',
-    address: 'Development Address',
-    description: 'Development organization for testing',
-    timezone: 'Africa/Kampala',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    users: [
-      {
-        id: 'dev-user-1',
-        email: 'dev@luminous.local',
-        firstName: 'Dev',
-        lastName: 'User',
-        role: 'ADMIN' as any,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-      }
-    ],
-  } : null;
-
-  const mockStats: OrganizationStats | null = isAuthDisabled ? {
-    totalUsers: 1,
-    activeUsers: 1,
-    inactiveUsers: 0,
-  } : null;
 
   const value: OrganizationContextType = {
-    organization: isAuthDisabled ? mockOrganization : (organization || null),
-    stats: isAuthDisabled ? mockStats : (stats || null),
-    isLoading: isAuthDisabled ? false : (orgLoading || statsLoading),
-    error: isAuthDisabled ? null : (orgError || statsError),
+    organization: organization || null,
+    stats: stats || null,
+    isLoading: orgLoading || statsLoading,
+    error: orgError || statsError,
     updateOrganization,
     addUser,
     removeUser,
