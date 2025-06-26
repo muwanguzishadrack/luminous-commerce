@@ -8,7 +8,9 @@ import {
   loginValidation, 
   refreshTokenValidation,
   forgotPasswordValidation,
-  resetPasswordValidation
+  resetPasswordValidation,
+  updateProfileValidation,
+  changePasswordValidation
 } from '@/validation/auth.validation';
 
 const router = Router();
@@ -25,5 +27,7 @@ router.post('/reset-password', resetPasswordValidation, handleValidationErrors, 
 
 // Protected routes
 router.get('/me', authenticate, authController.getCurrentUser);
+router.put('/profile', authenticate, updateProfileValidation, handleValidationErrors, authController.updateProfile);
+router.put('/change-password', authenticate, changePasswordValidation, handleValidationErrors, authController.changePassword);
 
 export default router;

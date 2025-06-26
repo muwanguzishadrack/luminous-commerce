@@ -6,7 +6,9 @@ import {
   LoginRequest, 
   JoinOrganizationRequest,
   AuthResponse, 
-  UserRole 
+  UserRole,
+  UpdateProfileRequest,
+  ChangePasswordRequest
 } from '@/types';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '@/utils/email';
@@ -357,5 +359,58 @@ export class AuthService {
         where: { token },
       }),
     ]);
+  }
+
+  async updateProfile(userId: string, data: UpdateProfileRequest): Promise<void> {
+    // Check if email is already taken by another user
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        email: data.email,
+        id: { not: userId },
+      },
+    });
+
+    if (existingUser) {
+      throw new Error('Email is already taken by another user');
+    }
+
+    // Update user profile
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+      },
+    });
+  }
+
+  async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
+    // Get current user
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Verify current password
+    const { comparePassword } = await import('@/utils/password');
+    const isValidPassword = await comparePassword(oldPassword, user.password);
+
+    if (!isValidPassword) {
+      throw new Error('Current password is incorrect');
+    }
+
+    // Hash new password
+    const { hashPassword } = await import('@/utils/password');
+    const hashedPassword = await hashPassword(newPassword);
+
+    // Update password
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
   }
 }

@@ -163,3 +163,36 @@ export const refreshTokenValidation = [
     .isLength({ min: 1 })
     .withMessage('Refresh token is required'),
 ];
+
+export const updateProfileValidation = [
+  body('firstName')
+    .trim()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('First name is required and must be between 1 and 50 characters'),
+  
+  body('lastName')
+    .trim()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Last name is required and must be between 1 and 50 characters'),
+  
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+];
+
+export const changePasswordValidation = [
+  body('oldPassword')
+    .isLength({ min: 1 })
+    .withMessage('Current password is required'),
+  
+  body('newPassword')
+    .isLength({ min: 8 })
+    .withMessage('New password must be at least 8 characters long')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('New password must contain at least one lowercase letter, one uppercase letter, and one number'),
+  
+  body('confirmPassword')
+    .custom((value, { req }) => value === req.body.newPassword)
+    .withMessage('Passwords do not match'),
+];

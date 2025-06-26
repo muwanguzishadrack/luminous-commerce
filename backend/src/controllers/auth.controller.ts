@@ -134,4 +134,43 @@ export class AuthController {
       next(error);
     }
   }
+
+  updateProfile = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user!.userId;
+      const data = req.body;
+      
+      await authService.updateProfile(userId, data);
+      
+      sendSuccess(res, 'Profile updated successfully');
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Email is already taken by another user') {
+          return sendError(res, error.message, undefined, 409);
+        }
+      }
+      next(error);
+    }
+  }
+
+  changePassword = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user!.userId;
+      const { oldPassword, newPassword } = req.body;
+      
+      await authService.changePassword(userId, oldPassword, newPassword);
+      
+      sendSuccess(res, 'Password changed successfully');
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Current password is incorrect') {
+          return sendError(res, error.message, undefined, 400);
+        }
+        if (error.message === 'User not found') {
+          return sendError(res, error.message, undefined, 404);
+        }
+      }
+      next(error);
+    }
+  }
 }
