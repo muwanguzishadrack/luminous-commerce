@@ -270,15 +270,12 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                     className="border-0 rounded-r-none border-r border-input focus:ring-0 focus:ring-offset-0 w-16 pointer-events-none opacity-75"
                   />
                   <div className="flex-1 relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                      {selectedCountry.dial_code}
-                    </span>
                     <Input
                       id="phoneNumber"
                       type="tel"
                       value={user?.phoneNumber || ''}
                       disabled
-                      className="border-0 rounded-l-none pl-12 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-gray-50 text-gray-500"
+                      className="border-0 rounded-l-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-gray-50 text-gray-500"
                     />
                   </div>
                 </div>
