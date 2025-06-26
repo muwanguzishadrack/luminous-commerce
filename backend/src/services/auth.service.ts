@@ -10,6 +10,7 @@ import {
 } from '@/types';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '@/utils/email';
+import { getCurrencyByCountryCode } from '@/utils/country-currency';
 
 export class AuthService {
   async register(data: RegisterRequest): Promise<AuthResponse> {
@@ -38,11 +39,18 @@ export class AuthService {
         counter++;
       }
 
-      // Create organization with business name
+      // Get currency based on country code
+      const currency = data.countryCode 
+        ? getCurrencyByCountryCode(data.countryCode)
+        : 'USD';
+
+      // Create organization with business name and auto-detected currency
       const organization = await tx.organization.create({
         data: {
           name: data.businessName,
           slug: finalSlug,
+          country: data.countryCode || null,
+          currency: currency,
         },
       });
 

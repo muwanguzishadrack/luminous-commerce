@@ -35,6 +35,12 @@ export const registerValidation = [
     .trim()
     .isMobilePhone('any')
     .withMessage('Valid phone number is required'),
+  
+  body('countryCode')
+    .optional()
+    .isLength({ min: 2, max: 2 })
+    .isAlpha()
+    .withMessage('Country code must be a valid 2-letter ISO code'),
 ];
 
 export const joinOrganizationValidation = [

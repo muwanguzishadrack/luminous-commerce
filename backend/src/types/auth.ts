@@ -11,6 +11,7 @@ export interface RegisterRequest {
   lastName: string;
   businessName: string;
   phoneNumber: string;
+  countryCode?: string;
 }
 
 export interface JoinOrganizationRequest {
