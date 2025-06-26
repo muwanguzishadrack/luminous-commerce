@@ -295,7 +295,23 @@ The latest version includes enhanced authentication schema with the following ch
 - **Organization table**: Added `logo`, `state`, `zipCode` fields
 - **PasswordResetToken table**: New table for secure password reset functionality
 
-#### Deploy Database Changes:
+#### Deploy Database Changes Using Railway CLI:
+
+Since you've already installed Railway CLI and connected your project, you can run migrations directly:
+
+```bash
+# Connect to your Railway project (already done)
+railway link -p a834b8a6-8f88-48bb-b7e1-ec2cd31c16ea
+
+# Run migrations in the backend service context
+railway run --service backend npx prisma generate
+railway run --service backend npx prisma migrate deploy
+
+# Optional: Seed database with initial data
+railway run --service backend npx prisma db seed
+```
+
+#### Alternative: Using Railway Dashboard Terminal
 
 1. In Railway dashboard, go to your backend service
 2. Click on "Railway CLI" or use the web terminal

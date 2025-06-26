@@ -74,7 +74,7 @@ export const LoginForm: React.FC = () => {
             type="email"
             autoComplete="email"
             {...register('email')}
-            className={errors.email ? 'border-red-500' : ''}
+            className={`focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${errors.email ? 'border-red-500' : ''}`}
           />
           {errors.email && (
             <p className="text-sm text-red-600">{errors.email.message}</p>
@@ -88,7 +88,7 @@ export const LoginForm: React.FC = () => {
             type="password"
             autoComplete="current-password"
             {...register('password')}
-            className={errors.password ? 'border-red-500' : ''}
+            className={`focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${errors.password ? 'border-red-500' : ''}`}
           />
           {errors.password && (
             <p className="text-sm text-red-600">{errors.password.message}</p>
@@ -109,7 +109,7 @@ export const LoginForm: React.FC = () => {
           <p className="text-sm text-gray-600">
             <Link
               to="/forgot-password"
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className="font-medium text-primary hover:text-primary/80"
             >
               Forgot your password?
             </Link>
@@ -118,7 +118,7 @@ export const LoginForm: React.FC = () => {
             Don't have an account?{' '}
             <Link
               to="/register"
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className="font-medium text-primary hover:text-primary/80"
             >
               Create account
             </Link>

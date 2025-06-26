@@ -36,7 +36,7 @@ export const BusinessProfileForm: React.FC<BusinessProfileFormProps> = ({ isOpti
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
   const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const { updateOrganization } = useOrganization();
+  const { organization, updateOrganization } = useOrganization();
   const navigate = useNavigate();
 
   const {
@@ -45,6 +45,16 @@ export const BusinessProfileForm: React.FC<BusinessProfileFormProps> = ({ isOpti
     formState: { errors },
   } = useForm<BusinessProfileFormData>({
     resolver: zodResolver(businessProfileSchema),
+    defaultValues: {
+      description: organization?.description || '',
+      address: organization?.address || '',
+      city: organization?.city || '',
+      state: organization?.state || '',
+      zipCode: organization?.zipCode || '',
+      country: organization?.country || '',
+      currency: organization?.currency || 'USD',
+      timezone: organization?.timezone || 'UTC',
+    },
   });
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -277,7 +287,7 @@ export const BusinessProfileForm: React.FC<BusinessProfileFormProps> = ({ isOpti
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="currency">Currency (optional)</Label>
+                <Label htmlFor="currency">Currency</Label>
                 <Input
                   id="currency"
                   placeholder="USD"
@@ -287,6 +297,11 @@ export const BusinessProfileForm: React.FC<BusinessProfileFormProps> = ({ isOpti
                 />
                 {errors.currency && (
                   <p className="text-sm text-red-600">{errors.currency.message}</p>
+                )}
+                {organization?.country && (
+                  <p className="text-xs text-gray-500">
+                    Automatically set based on your country selection during registration
+                  </p>
                 )}
               </div>
 

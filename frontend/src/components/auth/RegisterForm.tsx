@@ -11,6 +11,8 @@ import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ApiError } from '../../lib/api';
 import { AuthLayout } from './AuthLayout';
+import { CountrySelect } from '../ui/country-select';
+import { Country, defaultCountry } from '../../constants/countries';
 
 const registerSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -21,6 +23,7 @@ const registerSchema = z.object({
   firstName: z.string().min(1, 'First name is required').max(50, 'First name must be less than 50 characters'),
   lastName: z.string().min(1, 'Last name is required').max(50, 'Last name must be less than 50 characters'),
   businessName: z.string().min(1, 'Business name is required').max(100, 'Business name must be less than 100 characters'),
+  countryCode: z.string().min(2, 'Country is required'),
   phoneNumber: z.string().min(1, 'Phone number is required'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -32,21 +35,29 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export const RegisterForm: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<Country>(defaultCountry);
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      countryCode: defaultCountry.code,
+    },
   });
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
       setIsLoading(true);
       setError('');
+      
+      // Format phone number with country dial code
+      const fullPhoneNumber = `${selectedCountry.dial_code}${data.phoneNumber}`;
       
       await registerUser({
         email: data.email,
@@ -55,7 +66,8 @@ export const RegisterForm: React.FC = () => {
         firstName: data.firstName,
         lastName: data.lastName,
         businessName: data.businessName,
-        phoneNumber: data.phoneNumber,
+        phoneNumber: fullPhoneNumber,
+        countryCode: data.countryCode,
       });
       
       navigate('/dashboard');
@@ -68,6 +80,11 @@ export const RegisterForm: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCountryChange = (country: Country) => {
+    setSelectedCountry(country);
+    setValue('countryCode', country.code);
   };
 
   return (
@@ -89,7 +106,7 @@ export const RegisterForm: React.FC = () => {
               <Input
                 id="firstName"
                 {...register('firstName')}
-                className={errors.firstName ? 'border-red-500' : ''}
+                className={`focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${errors.firstName ? 'border-red-500' : ''}`}
               />
               {errors.firstName && (
                 <p className="text-sm text-red-600">{errors.firstName.message}</p>
@@ -101,7 +118,7 @@ export const RegisterForm: React.FC = () => {
               <Input
                 id="lastName"
                 {...register('lastName')}
-                className={errors.lastName ? 'border-red-500' : ''}
+                className={`focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${errors.lastName ? 'border-red-500' : ''}`}
               />
               {errors.lastName && (
                 <p className="text-sm text-red-600">{errors.lastName.message}</p>
@@ -114,7 +131,7 @@ export const RegisterForm: React.FC = () => {
             <Input
               id="businessName"
               {...register('businessName')}
-              className={errors.businessName ? 'border-red-500' : ''}
+              className={`focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${errors.businessName ? 'border-red-500' : ''}`}
             />
             {errors.businessName && (
               <p className="text-sm text-red-600">{errors.businessName.message}</p>
@@ -128,7 +145,7 @@ export const RegisterForm: React.FC = () => {
               type="email"
               autoComplete="email"
               {...register('email')}
-              className={errors.email ? 'border-red-500' : ''}
+              className={`focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${errors.email ? 'border-red-500' : ''}`}
             />
             {errors.email && (
               <p className="text-sm text-red-600">{errors.email.message}</p>
@@ -137,12 +154,24 @@ export const RegisterForm: React.FC = () => {
 
           <div className="space-y-2">
             <Label htmlFor="phoneNumber">Phone number</Label>
-            <Input
-              id="phoneNumber"
-              type="tel"
-              {...register('phoneNumber')}
-              className={errors.phoneNumber ? 'border-red-500' : ''}
-            />
+            <div className="flex border border-input rounded-md">
+              <CountrySelect
+                value={selectedCountry.code}
+                onChange={handleCountryChange}
+                className="border-0 rounded-r-none border-r border-input focus:ring-0 focus:ring-offset-0 w-16"
+              />
+              <div className="flex-1 relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                  {selectedCountry.dial_code}
+                </span>
+                <Input
+                  id="phoneNumber"
+                  type="tel"
+                  {...register('phoneNumber')}
+                  className={`border-0 rounded-l-none pl-12 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${errors.phoneNumber ? 'border-red-500' : ''}`}
+                />
+              </div>
+            </div>
             {errors.phoneNumber && (
               <p className="text-sm text-red-600">{errors.phoneNumber.message}</p>
             )}
@@ -156,7 +185,7 @@ export const RegisterForm: React.FC = () => {
                 type="password"
                 autoComplete="new-password"
                 {...register('password')}
-                className={errors.password ? 'border-red-500' : ''}
+                className={`focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${errors.password ? 'border-red-500' : ''}`}
               />
               {errors.password && (
                 <p className="text-sm text-red-600">{errors.password.message}</p>
@@ -170,7 +199,7 @@ export const RegisterForm: React.FC = () => {
                 type="password"
                 autoComplete="new-password"
                 {...register('confirmPassword')}
-                className={errors.confirmPassword ? 'border-red-500' : ''}
+                className={`focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${errors.confirmPassword ? 'border-red-500' : ''}`}
               />
               {errors.confirmPassword && (
                 <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
@@ -193,7 +222,7 @@ export const RegisterForm: React.FC = () => {
             Already have an account?{' '}
             <Link
               to="/login"
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className="font-medium text-primary hover:text-primary/80"
             >
               Sign in
             </Link>
