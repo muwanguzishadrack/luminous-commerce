@@ -11,6 +11,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
+  // Check if auth is disabled for development
+  const isAuthDisabled = import.meta.env.VITE_DISABLE_AUTH === 'true';
+
+  // If auth is disabled, always allow access
+  if (isAuthDisabled) {
+    return <>{children}</>;
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

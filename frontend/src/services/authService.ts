@@ -8,6 +8,8 @@ import {
   RefreshTokenResponse,
   ForgotPasswordRequest,
   ResetPasswordRequest,
+  UpdateProfileRequest,
+  ChangePasswordRequest,
 } from '../types/auth';
 import { UpdateOrganizationRequest } from '../types/organization';
 
@@ -90,6 +92,24 @@ export class AuthService {
   static async resetPassword(data: ResetPasswordRequest): Promise<void> {
     try {
       await api.post('/auth/reset-password', data);
+    } catch (error) {
+      throw handleApiError(error as any);
+    }
+  }
+
+  // Update profile
+  static async updateProfile(data: UpdateProfileRequest): Promise<void> {
+    try {
+      await api.put('/auth/profile', data);
+    } catch (error) {
+      throw handleApiError(error as any);
+    }
+  }
+
+  // Change password
+  static async changePassword(data: ChangePasswordRequest): Promise<void> {
+    try {
+      await api.put('/auth/change-password', data);
     } catch (error) {
       throw handleApiError(error as any);
     }

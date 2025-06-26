@@ -11,13 +11,27 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '../../contexts/AuthContext'
 import { useOrganization } from '../../contexts/OrganizationContext'
+import { ProfileDialog } from './ProfileDialog'
+import { useState } from 'react'
 
 export function TopBar() {
   const { user, logout } = useAuth()
   const { organization } = useOrganization()
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false)
+  
+  // Debug logging
+  console.log('TopBar rendered with profileDialogOpen:', profileDialogOpen)
+  console.log('TopBar user:', user)
 
   const handleLogout = async () => {
     await logout()
+  }
+
+  const handleProfileClick = () => {
+    console.log('Profile button clicked - opening dialog')
+    console.log('Current profileDialogOpen state:', profileDialogOpen)
+    setProfileDialogOpen(true)
+    console.log('Called setProfileDialogOpen(true)')
   }
 
   return (
@@ -82,7 +96,7 @@ export function TopBar() {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleProfileClick}>
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </DropdownMenuItem>
@@ -98,6 +112,12 @@ export function TopBar() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Profile Dialog */}
+      <ProfileDialog
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+      />
     </header>
   )
 }

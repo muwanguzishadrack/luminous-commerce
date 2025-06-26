@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, AuthResponse, LoginRequest, RegisterRequest, JoinOrganizationRequest } from '../types/auth';
+import { User, AuthResponse, LoginRequest, RegisterRequest, JoinOrganizationRequest, UserRole } from '../types/auth';
 import { AuthService } from '../services/authService';
 
 interface AuthContextType {
@@ -30,13 +30,41 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Check if auth is disabled for development
+  const isAuthDisabled = import.meta.env.VITE_DISABLE_AUTH === 'true';
 
-  const isAuthenticated = !!user && AuthService.isAuthenticated();
+  const isAuthenticated = isAuthDisabled || (!!user && AuthService.isAuthenticated());
 
   // Initialize auth state from localStorage
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        // If auth is disabled, create a mock user and skip auth checks
+        if (isAuthDisabled) {
+          const mockUser: User = {
+            id: 'dev-user-1',
+            firstName: 'Dev',
+            lastName: 'User',
+            email: 'dev@luminous.local',
+            phoneNumber: '+256700000000',
+            businessName: 'Dev Business',
+            role: UserRole.ADMIN,
+            organizationId: 'dev-org-1',
+            organization: {
+              id: 'dev-org-1',
+              name: 'Dev Business',
+              slug: 'dev-business',
+            },
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          setUser(mockUser);
+          setIsLoading(false);
+          return;
+        }
+
         const storedUser = AuthService.getStoredUser();
         const accessToken = AuthService.getAccessToken();
 
@@ -59,7 +87,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     initializeAuth();
-  }, []);
+  }, [isAuthDisabled]);
 
   const handleAuthSuccess = (authResponse: AuthResponse) => {
     AuthService.saveTokens(authResponse);
