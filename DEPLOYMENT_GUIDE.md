@@ -187,13 +187,13 @@ NODE_ENV=production
 # CORS (Update after Vercel deployment)
 FRONTEND_URL=https://your-app.vercel.app
 
-# Email Configuration (for password reset - configure based on your email provider)
-# SMTP_HOST=smtp.gmail.com
-# SMTP_PORT=587
-# SMTP_SECURE=false
-# SMTP_USER=your-email@gmail.com
-# SMTP_PASS=your-app-password
-# EMAIL_FROM=noreply@yourdomain.com
+# Email Configuration (SMTP for password reset emails)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+EMAIL_FROM=noreply@yourdomain.com
 
 # File Upload Configuration
 UPLOAD_MAX_SIZE=5242880
