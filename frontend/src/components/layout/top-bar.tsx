@@ -18,20 +18,13 @@ export function TopBar() {
   const { user, logout } = useAuth()
   const { organization } = useOrganization()
   const [profileDialogOpen, setProfileDialogOpen] = useState(false)
-  
-  // Debug logging
-  console.log('TopBar rendered with profileDialogOpen:', profileDialogOpen)
-  console.log('TopBar user:', user)
 
   const handleLogout = async () => {
     await logout()
   }
 
   const handleProfileClick = () => {
-    console.log('Profile button clicked - opening dialog')
-    console.log('Current profileDialogOpen state:', profileDialogOpen)
     setProfileDialogOpen(true)
-    console.log('Called setProfileDialogOpen(true)')
   }
 
   return (

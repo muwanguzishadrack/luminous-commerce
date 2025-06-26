@@ -56,10 +56,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
   open,
   onOpenChange,
 }) => {
-  console.log('ProfileDialog rendered with props:', { open, onOpenChange })
-  
   const { user, refreshUser } = useAuth();
-  console.log('ProfileDialog auth context:', { user, refreshUser });
   const [activeTab, setActiveTab] = useState('profile');
   const [profileError, setProfileError] = useState<string>('');
   const [securityError, setSecurityError] = useState<string>('');
@@ -67,23 +64,8 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
   const [securityLoading, setSecurityLoading] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(countries.find(c => c.code === 'UG') || countries[0]);
 
-  // Test if the basic dialog works
   if (!user) {
-    console.log('No user found, rendering simple dialog for testing');
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Profile Loading...</DialogTitle>
-            <DialogDescription>Loading user data...</DialogDescription>
-          </DialogHeader>
-          <div className="p-4">
-            <p>Please wait while we load your profile information.</p>
-            <Button onClick={() => onOpenChange(false)}>Close</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
+    return null;
   }
 
   // Get current user's country from phone number or default to Uganda
@@ -206,8 +188,6 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
     onOpenChange(false);
   };
 
-  console.log('ProfileDialog about to return JSX, open state:', open)
-  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] min-h-[520px] focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 border-0 outline-0">
