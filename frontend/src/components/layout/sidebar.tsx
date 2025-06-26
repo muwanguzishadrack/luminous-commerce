@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useOrganization } from '../../contexts/OrganizationContext'
 
 interface SidebarProps {
   currentPage: string
@@ -37,6 +38,7 @@ const bottomNavigationItems = [
 ]
 
 export function Sidebar({ currentPage, setCurrentPage }: SidebarProps) {
+  const { organization } = useOrganization()
   return (
     <div className="mb-2 ml-2 mt-2 flex w-64 flex-col rounded-lg border border-border bg-sidebar">
       {/* Logo section */}
@@ -55,12 +57,12 @@ export function Sidebar({ currentPage, setCurrentPage }: SidebarProps) {
           >
             <ShoppingBag
               className="h-5 w-5 text-gray-700"
-              style={{ width: '20px', height: '20px' }}
+              style={{ width: '18px', height: '18px' }}
             />
           </div>
           <div className="text-left">
-            <p className="text-sm font-normal text-gray-900">My Store</p>
-            <p className="text-xs text-gray-500">Main Location</p>
+            <p className="text-sm font-normal text-gray-900">Business</p>
+            <p className="text-xs text-gray-500">{organization?.name || ''}</p>
           </div>
         </div>
         <ChevronDown className="h-4 w-4 text-gray-400" />

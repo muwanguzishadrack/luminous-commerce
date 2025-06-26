@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   OrganizationWithUsers,
@@ -40,6 +40,11 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   const { isAuthenticated, user } = useAuth();
   const queryClient = useQueryClient();
   
+  // Initialize organization from localStorage for instant loading
+  const [cachedOrganization, setCachedOrganization] = useState<OrganizationWithUsers | null>(() => {
+    const stored = localStorage.getItem('organization');
+    return stored ? JSON.parse(stored) : null;
+  });
 
   // Fetch current organization
   const {
@@ -53,6 +58,22 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
     enabled: isAuthenticated && !!user?.organizationId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Update localStorage when organization data changes
+  useEffect(() => {
+    if (organization) {
+      localStorage.setItem('organization', JSON.stringify(organization));
+      setCachedOrganization(organization);
+    }
+  }, [organization]);
+
+  // Clear cached data on logout
+  useEffect(() => {
+    if (!isAuthenticated) {
+      localStorage.removeItem('organization');
+      setCachedOrganization(null);
+    }
+  }, [isAuthenticated]);
 
   // Fetch organization stats
   const {
@@ -124,7 +145,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
 
 
   const value: OrganizationContextType = {
-    organization: organization || null,
+    organization: organization || cachedOrganization || null,
     stats: stats || null,
     isLoading: orgLoading || statsLoading,
     error: orgError || statsError,

@@ -1,6 +1,5 @@
-import { Bell, Menu, ChevronDown, Search, LogOut, User, Settings } from 'lucide-react'
+import { Menu, ChevronDown, LogOut, User, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,13 +9,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '../../contexts/AuthContext'
-import { useOrganization } from '../../contexts/OrganizationContext'
 import { ProfileDialog } from './ProfileDialog'
 import { useState } from 'react'
 
 export function TopBar() {
   const { user, logout } = useAuth()
-  const { organization } = useOrganization()
   const [profileDialogOpen, setProfileDialogOpen] = useState(false)
 
   const handleLogout = async () => {
@@ -38,50 +35,32 @@ export function TopBar() {
           <Menu className="h-5 w-5" />
         </Button>
 
-        {/* Search Bar */}
-        <div className="relative w-80">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search"
-            className="rounded-xl pl-10 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-          />
-        </div>
       </div>
 
-      {/* Center section - Organization name */}
-      <div className="flex-1 text-center">
-        {organization && (
-          <p className="text-sm font-medium text-gray-700">{organization.name}</p>
-        )}
+      {/* Center section - Empty spacer */}
+      <div className="flex-1">
       </div>
 
       {/* Right section */}
       <div className="flex items-center gap-3">
-        {/* Notifications */}
-        <Button
-          variant="ghost"
-          className="relative h-8 w-8 rounded-xl p-2"
-          style={{ backgroundColor: '#e9eae5' }}
-        >
-          <Bell className="h-4 w-4" />
-        </Button>
-
         {/* User Profile Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="ml-2 flex items-center gap-2 h-auto p-2">
-              <img
-                src="/Luminous-CRM-Logo.jpg"
-                alt="Profile"
-                className="h-8 w-8 rounded-full object-cover"
-              />
-              <div className="hidden md:block text-left">
+            <Button
+              variant="ghost"
+              className="ml-2 flex h-auto items-center gap-2 p-2 hover:bg-transparent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            >
+              <div
+                className="flex h-9 w-9 items-center justify-center rounded-xl"
+                style={{ backgroundColor: '#e9eae5' }}
+              >
+                <User style={{ width: '18px', height: '18px' }} />
+              </div>
+              <div className="hidden text-left md:block">
                 <p className="text-sm font-normal text-gray-900">
                   {user ? `${user.firstName} ${user.lastName}` : 'Loading...'}
                 </p>
-                <p className="text-xs text-gray-500">
-                  {user?.email || 'Loading...'}
-                </p>
+                <p className="text-xs text-gray-500">{user?.email || 'Loading...'}</p>
               </div>
               <ChevronDown className="h-4 w-4 text-gray-400" />
             </Button>
@@ -107,10 +86,7 @@ export function TopBar() {
       </div>
 
       {/* Profile Dialog */}
-      <ProfileDialog
-        open={profileDialogOpen}
-        onOpenChange={setProfileDialogOpen}
-      />
+      <ProfileDialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen} />
     </header>
   )
 }
