@@ -330,13 +330,8 @@ export class AuthService {
       },
     });
 
-    // TODO: Send email with reset link
-    // const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
-    // await sendEmail({
-    //   to: email,
-    //   subject: 'Password Reset',
-    //   text: `Click here to reset your password: ${resetUrl}`,
-    // });
+    // Send password reset email
+    await sendPasswordResetEmail(email, token);
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
