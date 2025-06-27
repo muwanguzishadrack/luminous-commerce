@@ -8,12 +8,25 @@ import { Label } from '../ui/label'
 import { Upload, Image, Trash2 } from 'lucide-react'
 import { UploadService } from '../../services/uploadService'
 import { UpdateOrganizationRequest } from '../../types/organization'
+import { toast } from 'sonner'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../ui/alert-dialog'
 
 const GeneralSettings: React.FC = () => {
   const { organization, isLoading, error, updateOrganization } = useOrganization()
   const [uploading, setUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [formData, setFormData] = useState<UpdateOrganizationRequest>({})
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   useEffect(() => {
     if (organization) {
@@ -81,7 +94,7 @@ const GeneralSettings: React.FC = () => {
 
     const validation = UploadService.validateImageFile(file)
     if (!validation.valid) {
-      alert(validation.error)
+      toast.error(validation.error || 'Invalid file format')
       return
     }
 
@@ -89,9 +102,10 @@ const GeneralSettings: React.FC = () => {
     try {
       const logoUrl = await UploadService.uploadLogo(file)
       await updateOrganization({ logo: logoUrl })
+      toast.success('Logo uploaded successfully!')
     } catch (error) {
       console.error('Failed to upload logo:', error)
-      alert('Failed to upload logo. Please try again.')
+      toast.error('Failed to upload logo. Please try again.')
     } finally {
       setUploading(false)
       event.target.value = ''
@@ -99,17 +113,17 @@ const GeneralSettings: React.FC = () => {
   }
 
   const handleLogoDelete = async () => {
-    if (!confirm('Are you sure you want to delete the logo?')) return
-
     setUploading(true)
     try {
       await UploadService.deleteLogo()
       await updateOrganization({ logo: undefined })
+      toast.success('Logo deleted successfully!')
     } catch (error) {
       console.error('Failed to delete logo:', error)
-      alert('Failed to delete logo. Please try again.')
+      toast.error('Failed to delete logo. Please try again.')
     } finally {
       setUploading(false)
+      setShowDeleteDialog(false)
     }
   }
 
@@ -117,10 +131,10 @@ const GeneralSettings: React.FC = () => {
     setIsSaving(true)
     try {
       await updateOrganization(formData)
-      alert('Organization details updated successfully!')
+      toast.success('Organization details updated successfully!')
     } catch (error) {
       console.error('Failed to update organization:', error)
-      alert('Failed to update organization. Please try again.')
+      toast.error('Failed to update organization. Please try again.')
     } finally {
       setIsSaving(false)
     }
@@ -173,16 +187,37 @@ const GeneralSettings: React.FC = () => {
                 </Button>
               </Label>
               {organization.logo && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={uploading}
-                  onClick={handleLogoDelete}
-                  className="gap-2 rounded-xl"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Remove
-                </Button>
+                <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={uploading}
+                      className="gap-2 rounded-xl"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Remove
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Logo</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete the organization logo? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={uploading}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleLogoDelete}
+                        disabled={uploading}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {uploading ? 'Deleting...' : 'Delete Logo'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               )}
             </div>
           </div>
@@ -238,7 +273,7 @@ const GeneralSettings: React.FC = () => {
             </div>
           </div>
 
-          {/* Row 2: City */}
+          {/* Row 2: City, Zip Code */}
           <div className="grid grid-cols-2 gap-6">
             <div>
               <h3 className="mb-4 text-sm font-medium text-foreground">City</h3>
@@ -249,10 +284,6 @@ const GeneralSettings: React.FC = () => {
                 className="rounded-xl focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
-          </div>
-
-          {/* Row 3: Zip Code, Timezone */}
-          <div className="grid grid-cols-2 gap-6">
             <div>
               <h3 className="mb-4 text-sm font-medium text-foreground">Zip/Postal Code</h3>
               <Input
@@ -262,6 +293,10 @@ const GeneralSettings: React.FC = () => {
                 className="rounded-xl focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
+          </div>
+
+          {/* Row 3: Timezone */}
+          <div className="grid grid-cols-2 gap-6">
             <div>
               <h3 className="mb-4 text-sm font-medium text-foreground">Timezone</h3>
               <Select 
