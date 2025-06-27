@@ -1,37 +1,33 @@
 import { S3Client } from '@aws-sdk/client-s3';
 
-// MinIO/S3 Configuration
+// AWS S3 Configuration
 const storageConfig = {
-  endpoint: process.env.MINIO_ENDPOINT || 'http://localhost:9000',
-  accessKeyId: process.env.MINIO_ACCESS_KEY || '',
-  secretAccessKey: process.env.MINIO_SECRET_KEY || '',
-  region: process.env.MINIO_REGION || 'us-east-1',
-  forcePathStyle: true, // Required for MinIO
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+  region: process.env.AWS_REGION || 'us-east-1',
 };
 
 // Validate required environment variables
-const requiredEnvVars = ['MINIO_ENDPOINT', 'MINIO_ACCESS_KEY', 'MINIO_SECRET_KEY'];
+const requiredEnvVars = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_S3_BUCKET'];
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
-  console.warn(`Warning: Missing MinIO environment variables: ${missingEnvVars.join(', ')}`);
+  console.warn(`Warning: Missing AWS S3 environment variables: ${missingEnvVars.join(', ')}`);
   console.warn('File upload functionality will be disabled.');
 }
 
-// Create S3 client configured for MinIO
+// Create S3 client
 export const s3Client = new S3Client({
-  endpoint: storageConfig.endpoint,
   region: storageConfig.region,
   credentials: {
     accessKeyId: storageConfig.accessKeyId,
     secretAccessKey: storageConfig.secretAccessKey,
   },
-  forcePathStyle: storageConfig.forcePathStyle,
 });
 
 // Storage configuration constants
 export const STORAGE_CONFIG = {
-  BUCKET: process.env.MINIO_BUCKET || 'luminous-files',
+  BUCKET: process.env.AWS_S3_BUCKET || 'luminous-files',
   FOLDERS: {
     IMAGES: 'images',
     PRODUCTS: 'products',
@@ -46,7 +42,7 @@ export const STORAGE_CONFIG = {
     IMAGES: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
     DOCUMENTS: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
   },
-  CDN_BASE_URL: process.env.MINIO_CDN_URL || process.env.MINIO_ENDPOINT,
+  CDN_BASE_URL: process.env.AWS_CLOUDFRONT_URL || `https://${process.env.AWS_S3_BUCKET}.s3.${storageConfig.region}.amazonaws.com`,
 } as const;
 
 // Check if storage is properly configured
@@ -57,7 +53,12 @@ export const isStorageConfigured = (): boolean => {
 // Get public URL for a file
 export const getPublicUrl = (key: string): string => {
   const baseUrl = STORAGE_CONFIG.CDN_BASE_URL;
-  return `${baseUrl}/${STORAGE_CONFIG.BUCKET}/${key}`;
+  // If using CloudFront, the URL structure is different
+  if (process.env.AWS_CLOUDFRONT_URL) {
+    return `${baseUrl}/${key}`;
+  }
+  // Standard S3 URL
+  return `${baseUrl}/${key}`;
 };
 
 export default {

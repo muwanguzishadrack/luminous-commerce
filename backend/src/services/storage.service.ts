@@ -43,14 +43,14 @@ export class StorageService {
       if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
         try {
           await this.s3.send(new CreateBucketCommand({ Bucket: bucket }));
-          console.log(`Created bucket: ${bucket}`);
+          console.log(`Created S3 bucket: ${bucket}`);
         } catch (createError) {
           console.error(`Failed to create bucket ${bucket}:`, createError);
-          throw new Error(`Failed to create storage bucket: ${bucket}`);
+          throw new Error(`Failed to create S3 bucket: ${bucket}`);
         }
       } else {
         console.error(`Error checking bucket ${bucket}:`, error);
-        throw new Error(`Failed to access storage bucket: ${bucket}`);
+        throw new Error(`Failed to access S3 bucket: ${bucket}`);
       }
     }
   }
@@ -100,7 +100,7 @@ export class StorageService {
   }
 
   /**
-   * Upload file to MinIO storage
+   * Upload file to AWS S3
    */
   async uploadFile(
     key: string,
@@ -314,9 +314,9 @@ export class StorageService {
   async initializeBucket(): Promise<void> {
     try {
       await this.ensureBucketExists();
-      console.log(`✅ Bucket ready: ${STORAGE_CONFIG.BUCKET}`);
+      console.log(`✅ S3 bucket ready: ${STORAGE_CONFIG.BUCKET}`);
     } catch (error) {
-      console.error(`❌ Failed to initialize bucket ${STORAGE_CONFIG.BUCKET}:`, error);
+      console.error(`❌ Failed to initialize S3 bucket ${STORAGE_CONFIG.BUCKET}:`, error);
     }
   }
 }
