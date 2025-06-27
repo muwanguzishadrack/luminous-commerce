@@ -10,7 +10,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children, currentPage, setCurrentPage }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen bg-sidebar">
+    <div className="h-screen overflow-hidden bg-sidebar">
       <div className="flex h-screen">
         {/* Sidebar */}
         <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
@@ -22,8 +22,10 @@ export function DashboardLayout({ children, currentPage, setCurrentPage }: Dashb
 
           {/* Page content */}
           <main
-            className={`flex-1 overflow-y-auto bg-sidebar ${
-              currentPage !== 'chat' ? 'p-6' : 'p-2'
+            className={`flex-1 bg-sidebar ${
+              currentPage === 'chat' || currentPage === 'settings' ? 'overflow-hidden' : 'overflow-y-auto'
+            } ${
+              currentPage === 'chat' ? 'p-2' : currentPage === 'settings' ? 'p-6' : 'p-6'
             }`}
           >
             {currentPage === 'chat' ? (

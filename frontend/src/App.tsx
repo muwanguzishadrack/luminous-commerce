@@ -20,6 +20,7 @@ import {
   Transactions,
   Wallet,
   CreateTemplate,
+  Settings,
 } from './components/pages';
 
 // Create a client
@@ -57,6 +58,7 @@ function DashboardApp() {
           <Route path="/campaigns" element={<Campaigns setCurrentPage={setCurrentPage} />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/wallet" element={<Wallet />} />
+          <Route path="/settings" element={<Settings />} />
           <Route
             path="/create-template"
             element={<CreateTemplate onBack={() => setCurrentPage('campaigns')} />}
