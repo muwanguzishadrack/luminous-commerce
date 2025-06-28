@@ -23,6 +23,7 @@
     "@aws-sdk/s3-request-presigner": "^3.837.0",
     "@prisma/client": "^6.10.1",
     "@types/nodemailer": "^6.4.17",
+    "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
@@ -35,7 +36,8 @@
     "multer": "^2.0.1",
     "nodemailer": "^7.0.3",
     "prisma": "^6.10.1",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

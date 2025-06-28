@@ -40,3 +40,16 @@ export const sendValidationError = (
     errors,
   });
 };
+
+// Helper functions for controllers
+export const successResponse = <T>(message: string, data?: T) => ({
+  success: true,
+  message,
+  data,
+});
+
+export const errorResponse = (message: string, error?: any) => ({
+  success: false,
+  message,
+  error,
+});

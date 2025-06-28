@@ -34,6 +34,10 @@ model User {
   // Password reset tokens
   passwordResetTokens PasswordResetToken[]
 
+  // WhatsApp relationships
+  whatsappMessages WhatsAppMessage[]
+  whatsappContacts WhatsAppContact[]
+
   @@unique([email, organizationId])
   @@map("users")
 }
@@ -53,11 +57,18 @@ model Organization {
   timezone    String   @default("UTC")
   currency    String   @default("USD")
   isActive    Boolean  @default(true)
+  
+  // WhatsApp configuration stored in metadata JSON
+  metadata    Json?
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relationships
-  users User[]
+  users       User[]
+  messages    WhatsAppMessage[]
+  templates   WhatsAppTemplate[]
+  contacts    WhatsAppContact[]
 
   @@map("organizations")
 }
@@ -73,9 +84,144 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
+model WhatsAppMessage {
+  id                   String    @id @default(cuid())
+  organizationId       String
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  // Message Details
+  wamId                String?   // WhatsApp Message ID from Meta (WAM ID)
+  conversationId       String    // Internal conversation ID
+  contactId            String?
+  contact              WhatsAppContact? @relation(fields: [contactId], references: [id])
+  
+  // Message Content
+  type                 MessageType
+  metadata             Json      // Message content and metadata (matches Laravel pattern)
+  direction            MessageDirection
+  status               MessageStatus @default(PENDING)
+  
+  // Agent assignment (for outbound messages)
+  userId               String?
+  user                 User? @relation(fields: [userId], references: [id])
+  
+  // Media reference
+  mediaId              String?
+  
+  // Meta timestamps
+  timestamp            DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@map("whatsapp_messages")
+}
+
+model WhatsAppTemplate {
+  id                   String    @id @default(cuid())
+  organizationId       String
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  // Template Details
+  metaId               String    // Meta Template ID (matches Laravel pattern)
+  name                 String
+  language             String
+  category             TemplateCategory
+  status               TemplateStatus
+  
+  // Template Content (stored as JSON metadata like Laravel)
+  metadata             Json      // Complete template structure
+  
+  // Tracking
+  createdBy            String?   // User who created template
+  rejectionReason      String?
+  
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@unique([organizationId, metaId])
+  @@map("whatsapp_templates")
+}
+
+model WhatsAppContact {
+  id                   String    @id @default(cuid())
+  organizationId       String
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  // Contact Details (matches Laravel contacts table structure)
+  firstName            String?
+  lastName             String?
+  phone                String?   // Phone number
+  email                String?
+  avatar               String?   // Profile picture URL
+  address              String?   // Text address
+  
+  // WhatsApp specific fields
+  isBlocked            Boolean   @default(false)
+  isFavorite           Boolean   @default(false)
+  
+  // Conversation tracking
+  lastMessageAt        DateTime?
+  
+  // Contact grouping (for future use)
+  contactGroupId       String?
+  
+  // Tracking
+  createdBy            String?   // User who added contact
+  createdByUser        User? @relation(fields: [createdBy], references: [id])
+  
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  // Relationships
+  messages             WhatsAppMessage[]
+
+  @@unique([organizationId, phone])
+  @@map("whatsapp_contacts")
+}
+
 enum UserRole {
   OWNER
   ADMIN
   MANAGER
   MEMBER
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  LOCATION
+  CONTACT
+  TEMPLATE
+  INTERACTIVE
+  REACTION
+  SYSTEM
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum TemplateCategory {
+  MARKETING
+  UTILITY
+  AUTHENTICATION
+}
+
+enum TemplateStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DISABLED
 }
