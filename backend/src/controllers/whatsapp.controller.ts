@@ -1,9 +1,10 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../types/express';
-import { EmbeddedSignupService } from '../services/embedded-signup.service';
+import { WhatsAppManualSetupService } from '../services/whatsapp-manual-setup.service';
 import { WhatsAppService } from '../services/whatsapp.service';
 import { MetaService } from '../services/meta.service';
 import { 
+  ManualSetupCredentials,
   CreateWhatsAppConfigRequest,
   UpdateWhatsAppConfigRequest,
   SendMessageRequest,
@@ -15,48 +16,123 @@ import {
 import { successResponse, errorResponse } from '../utils/response';
 
 export class WhatsAppController {
-  private embeddedSignupService: EmbeddedSignupService;
+  private manualSetupService: WhatsAppManualSetupService;
   private metaService: MetaService;
 
   constructor() {
-    this.embeddedSignupService = new EmbeddedSignupService();
+    this.manualSetupService = new WhatsAppManualSetupService();
     this.metaService = new MetaService();
   }
 
   /**
-   * Handle OAuth exchange code from Meta embedded signup
-   * GET/POST /api/whatsapp/exchange-code
+   * Setup WhatsApp manually with user-provided credentials
+   * POST /api/whatsapp/setup/:orgId
    */
-  handleEmbeddedSignup = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  setupManualConfiguration = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const { code, state } = req.query;
-      const organizationId = req.organization?.id;
+      const organizationId = req.params.orgId || req.organization?.id;
+      const credentials: ManualSetupCredentials = req.body;
 
       if (!organizationId) {
         res.status(400).json(errorResponse('Organization ID required'));
         return;
       }
 
-      if (!code) {
-        res.status(400).json(errorResponse('Authorization code required'));
+      // Validate required fields
+      const required = ['access_token', 'app_id', 'phone_number_id', 'waba_id'];
+      const missing = required.filter(field => !credentials[field as keyof ManualSetupCredentials]);
+      
+      if (missing.length > 0) {
+        res.status(400).json(errorResponse(`Missing required fields: ${missing.join(', ')}`));
         return;
       }
 
-      // Handle the complete embedded signup flow
-      const result = await this.embeddedSignupService.handleSignupFlow(
-        code as string,
-        organizationId
+      // Setup manual configuration
+      const result = await this.manualSetupService.setupManualConfiguration(
+        organizationId,
+        credentials
       );
 
-      if (result.success) {
-        res.json(successResponse('WhatsApp embedded signup completed successfully', result.data));
-      } else {
-        res.status(400).json(errorResponse(result.error || 'Signup failed'));
-      }
+      res.json(successResponse('WhatsApp configuration setup successfully', result));
 
     } catch (error: any) {
-      console.error('Embedded signup error:', error);
-      res.status(500).json(errorResponse(error.message || 'Internal server error'));
+      console.error('Manual setup error:', error);
+      res.status(500).json(errorResponse(error.message || 'Failed to setup WhatsApp configuration'));
+    }
+  };
+
+  /**
+   * Refresh WhatsApp configuration data from Facebook
+   * POST /api/whatsapp/settings/:orgId/refresh
+   */
+  refreshConfiguration = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const organizationId = req.params.orgId || req.organization?.id;
+
+      if (!organizationId) {
+        res.status(400).json(errorResponse('Organization ID required'));
+        return;
+      }
+
+      const result = await this.manualSetupService.refreshConfiguration(organizationId);
+
+      res.json(successResponse('Configuration refreshed successfully', result));
+
+    } catch (error: any) {
+      console.error('Configuration refresh error:', error);
+      res.status(500).json(errorResponse(error.message || 'Failed to refresh configuration'));
+    }
+  };
+
+  /**
+   * Update access token only
+   * POST /api/whatsapp/settings/:orgId/token
+   */
+  updateAccessToken = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const organizationId = req.params.orgId || req.organization?.id;
+      const { access_token } = req.body;
+
+      if (!organizationId) {
+        res.status(400).json(errorResponse('Organization ID required'));
+        return;
+      }
+
+      if (!access_token) {
+        res.status(400).json(errorResponse('Access token required'));
+        return;
+      }
+
+      const result = await this.manualSetupService.updateAccessToken(organizationId, access_token);
+
+      res.json(successResponse('Access token updated successfully', result));
+
+    } catch (error: any) {
+      console.error('Access token update error:', error);
+      res.status(500).json(errorResponse(error.message || 'Failed to update access token'));
+    }
+  };
+
+  /**
+   * Get webhook configuration for organization
+   * GET /api/whatsapp/webhook-config/:orgId
+   */
+  getWebhookConfig = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const organizationId = req.params.orgId || req.organization?.id;
+
+      if (!organizationId) {
+        res.status(400).json(errorResponse('Organization ID required'));
+        return;
+      }
+
+      const result = await this.manualSetupService.getWebhookConfig(organizationId);
+
+      res.json(successResponse('Webhook configuration retrieved', result));
+
+    } catch (error: any) {
+      console.error('Webhook config error:', error);
+      res.status(500).json(errorResponse(error.message || 'Failed to get webhook configuration'));
     }
   };
 
@@ -73,7 +149,8 @@ export class WhatsAppController {
         return;
       }
 
-      const config = await this.embeddedSignupService.getWhatsAppConfig(organizationId);
+      const whatsappService = new WhatsAppService(organizationId);
+      const config = await whatsappService.getWhatsAppConfig();
       
       if (!config) {
         res.status(404).json(errorResponse('WhatsApp configuration not found'));
@@ -117,7 +194,8 @@ export class WhatsAppController {
         return;
       }
 
-      await this.embeddedSignupService.updateWhatsAppConfig(organizationId, updates);
+      const whatsappService = new WhatsAppService(organizationId);
+      await whatsappService.updateWhatsAppConfig(updates);
 
       res.json(successResponse('WhatsApp settings updated successfully'));
 
@@ -140,7 +218,8 @@ export class WhatsAppController {
         return;
       }
 
-      const status = await this.embeddedSignupService.getAccountStatus(organizationId);
+      const whatsappService = new WhatsAppService(organizationId);
+      const status = await whatsappService.getAccountStatus();
       res.json(successResponse('Account status retrieved', status));
 
     } catch (error: any) {
@@ -162,7 +241,8 @@ export class WhatsAppController {
         return;
       }
 
-      const validation = await this.embeddedSignupService.validateConfig(organizationId);
+      const whatsappService = new WhatsAppService(organizationId);
+      const validation = await whatsappService.validateConfiguration();
       res.json(successResponse('Configuration validated', validation));
 
     } catch (error: any) {

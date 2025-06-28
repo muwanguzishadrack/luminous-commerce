@@ -10,6 +10,14 @@ import {
   TemplateStatus
 } from '@prisma/client';
 
+// Manual Setup Credentials Interface
+export interface ManualSetupCredentials {
+  access_token: string;
+  app_id: string;
+  phone_number_id: string;
+  waba_id: string;
+}
+
 // Base WhatsApp types from Prisma
 export {
   WhatsAppMessage,

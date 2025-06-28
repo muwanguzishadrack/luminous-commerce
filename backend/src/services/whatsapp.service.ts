@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client';
 import { MetaService } from './meta.service';
-import { EmbeddedSignupService } from './embedded-signup.service';
 import { 
   WhatsAppConfig,
   SendMessageRequest,
@@ -23,13 +22,11 @@ const prisma = new PrismaClient();
 
 export class WhatsAppService {
   private metaService: MetaService;
-  private embeddedSignupService: EmbeddedSignupService;
   private organizationId: string;
   private config: WhatsAppConfig | null = null;
 
   constructor(organizationId: string) {
     this.metaService = new MetaService();
-    this.embeddedSignupService = new EmbeddedSignupService();
     this.organizationId = organizationId;
   }
 
@@ -38,10 +35,172 @@ export class WhatsAppService {
    */
   private async initializeConfig(): Promise<void> {
     if (!this.config) {
-      this.config = await this.embeddedSignupService.getWhatsAppConfig(this.organizationId);
+      this.config = await this.getWhatsAppConfig();
       if (!this.config) {
         throw new Error('WhatsApp configuration not found for organization');
       }
+    }
+  }
+
+  /**
+   * Get WhatsApp configuration for organization
+   */
+  async getWhatsAppConfig(): Promise<WhatsAppConfig | null> {
+    try {
+      const organization = await prisma.organization.findUnique({
+        where: { id: this.organizationId },
+        select: { metadata: true }
+      });
+
+      if (!organization?.metadata || !(organization.metadata as any).whatsapp) {
+        return null;
+      }
+
+      return (organization.metadata as any).whatsapp as WhatsAppConfig;
+
+    } catch (error) {
+      console.error('Failed to get WhatsApp configuration:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Update WhatsApp configuration
+   */
+  async updateWhatsAppConfig(updates: Partial<WhatsAppConfig>): Promise<void> {
+    try {
+      const organization = await prisma.organization.findUnique({
+        where: { id: this.organizationId },
+        select: { metadata: true }
+      });
+
+      if (!organization) {
+        throw new Error('Organization not found');
+      }
+
+      const currentMetadata = organization.metadata as any || {};
+      const currentWhatsAppConfig = currentMetadata.whatsapp || {};
+      
+      const updatedMetadata = {
+        ...currentMetadata,
+        whatsapp: {
+          ...currentWhatsAppConfig,
+          ...updates
+        }
+      };
+
+      await prisma.organization.update({
+        where: { id: this.organizationId },
+        data: { metadata: updatedMetadata }
+      });
+
+      // Reset config so it gets reloaded next time
+      this.config = null;
+
+    } catch (error) {
+      console.error('Failed to update WhatsApp configuration:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get account status
+   */
+  async getAccountStatus(): Promise<any> {
+    try {
+      await this.initializeConfig();
+      
+      if (!this.config?.access_token || !this.config?.waba_id) {
+        throw new Error('WhatsApp configuration incomplete');
+      }
+
+      // Get account review status
+      const accountStatus = await this.metaService.makeGraphApiCall(
+        this.config.waba_id,
+        'GET',
+        null,
+        this.config.access_token,
+        { fields: 'account_review_status' }
+      );
+
+      // Get phone number status if available
+      let phoneStatus = null;
+      if (this.config.phone_number_id) {
+        phoneStatus = await this.metaService.makeGraphApiCall(
+          this.config.phone_number_id,
+          'GET',
+          null,
+          this.config.access_token,
+          { fields: 'status,code_verification_status,quality_rating' }
+        );
+      }
+
+      return {
+        account_review_status: accountStatus.account_review_status,
+        phone_status: phoneStatus,
+        waba_id: this.config.waba_id,
+        phone_number_id: this.config.phone_number_id,
+        display_phone_number: this.config.display_phone_number
+      };
+
+    } catch (error) {
+      console.error('Failed to get account status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Validate configuration
+   */
+  async validateConfiguration(): Promise<any> {
+    try {
+      await this.initializeConfig();
+      
+      if (!this.config) {
+        return {
+          valid: false,
+          errors: ['WhatsApp configuration not found'],
+          warnings: []
+        };
+      }
+
+      const errors: string[] = [];
+      const warnings: string[] = [];
+
+      // Check required fields
+      if (!this.config.access_token) errors.push('Access token is missing');
+      if (!this.config.app_id) errors.push('App ID is missing');
+      if (!this.config.phone_number_id) errors.push('Phone Number ID is missing');
+      if (!this.config.waba_id) errors.push('WABA ID is missing');
+
+      // Check account status
+      if (this.config.account_review_status === 'PENDING') {
+        warnings.push('Account review is pending with Meta');
+      }
+
+      if (this.config.quality_rating === 'RED') {
+        warnings.push('Phone number quality rating is RED - messaging may be limited');
+      }
+
+      return {
+        valid: errors.length === 0,
+        errors,
+        warnings,
+        config: {
+          is_configured: errors.length === 0,
+          account_status: this.config.account_review_status,
+          quality_rating: this.config.quality_rating,
+          phone_number: this.config.display_phone_number
+        }
+      };
+
+    } catch (error) {
+      console.error('Failed to validate configuration:', error);
+      return {
+        valid: false,
+        errors: ['Failed to validate configuration: ' + (error as Error).message],
+        warnings: []
+      };
     }
   }
 
@@ -280,7 +439,7 @@ export class WhatsAppService {
       // Update stored business profile in metadata
       if (this.config.business_profile) {
         const updatedBusinessProfile = { ...this.config.business_profile, ...profile };
-        await this.embeddedSignupService.updateWhatsAppConfig(this.organizationId, {
+        await this.updateWhatsAppConfig({
           business_profile: updatedBusinessProfile,
         });
       }
@@ -402,7 +561,48 @@ export class WhatsAppService {
    * Sync templates from Facebook
    */
   async syncTemplates(): Promise<void> {
-    return this.embeddedSignupService.syncTemplates(this.organizationId);
+    try {
+      await this.initializeConfig();
+      
+      if (!this.config?.access_token || !this.config?.waba_id) {
+        throw new Error('WhatsApp configuration incomplete');
+      }
+
+      // Get templates from Facebook
+      const response = await this.metaService.makeGraphApiCall(
+        `${this.config.waba_id}/message_templates`,
+        'GET',
+        null,
+        this.config.access_token,
+        { fields: 'id,name,category,language,status,components' }
+      );
+
+      // Delete existing templates for this organization
+      await prisma.whatsAppTemplate.deleteMany({
+        where: { organizationId: this.organizationId }
+      });
+
+      // Store new templates
+      if (response.data && response.data.length > 0) {
+        const templates = response.data.map((template: any) => ({
+          organizationId: this.organizationId,
+          metaId: template.id,
+          name: template.name,
+          category: template.category?.toUpperCase() || 'UTILITY',
+          language: template.language || 'en',
+          status: template.status?.toUpperCase() || 'PENDING',
+          metadata: template
+        }));
+
+        await prisma.whatsAppTemplate.createMany({
+          data: templates
+        });
+      }
+
+    } catch (error) {
+      console.error('Failed to sync templates:', error);
+      throw error;
+    }
   }
 
   /**

@@ -1,7 +1,7 @@
-# EmbeddedSignup Module Implementation Plan
+# WhatsApp Manual Configuration Implementation Plan
 ## React Frontend + Node.js Backend
 
-Based on the Laravel reference analysis, here's a focused plan for implementing the WhatsApp EmbeddedSignup module:
+Based on the Laravel reference analysis, here's a focused plan for implementing WhatsApp Manual Configuration (simpler alternative to Embedded Signup):
 
 ## **Phase 1: Backend Database & Models**
 ### 1.1 Database Schema (Following Laravel Reference Pattern)
@@ -87,23 +87,25 @@ CREATE TABLE whatsapp_contacts (
 ```json
 {
   "whatsapp": {
-    "is_embedded_signup": true,
-    "access_token": "...", 
-    "app_id": "...", // Same as client_id in OAuth flows
-    "client_secret": "...", // encrypted
-    "config_id": "...",
-    "waba_id": "...",
-    "phone_number_id": "...",
-    "display_phone_number": "...",
-    "verified_name": "...",
-    "quality_rating": "...",
-    "name_status": "...",
-    "messaging_limit_tier": "...",
+    "is_embedded_signup": false,
+    "access_token": "EAAxx...", 
+    "app_id": "123456789",
+    "phone_number_id": "111111111111",
+    "waba_id": "987654321",
+    "display_phone_number": "+1234567890",
+    "verified_name": "Business Name",
+    "quality_rating": "GREEN",
+    "name_status": "APPROVED",
+    "messaging_limit_tier": "TIER_1000",
+    "number_status": "CONNECTED",
+    "code_verification_status": "VERIFIED",
+    "account_review_status": "APPROVED",
     "business_profile": {
-      "about": "...",
-      "address": "...",
-      "description": "...",
-      "email": "..."
+      "about": "Business description",
+      "address": "Business address",
+      "description": "Profile description",
+      "industry": "RETAIL",
+      "email": "business@example.com"
     }
   }
 }
@@ -125,26 +127,33 @@ CREATE TABLE whatsapp_contacts (
 - [x] All models properly scoped by organizationId for multi-tenancy
 - [x] Code compilation verified without errors
 
-## **Phase 2: Backend API Services** ✅ COMPLETED
+## **Phase 2: Backend API Services** ✅ COMPLETED (UPDATE TO MANUAL)
 ### 2.1 Core Services (Based on Laravel Reference)
 
 #### **MetaService**: Facebook Graph API Integration
-- `overrideWabaCallbackUrl(organizationId)` - Update webhook callback URLs
 - `makeGraphApiCall(endpoint, method, data)` - Generic Graph API wrapper
-- Uses organization-specific access tokens and WABA IDs
+- `validateAccessToken(token, appId, wabaId)` - Verify manually entered credentials
+- `getPhoneNumberId(accessToken, wabaId)` - Get phone number details
+- `getPhoneNumberStatus(accessToken, phoneNumberId)` - Check phone status
+- `getAccountReviewStatus(accessToken, wabaId)` - Check account status
+- `getBusinessProfile(accessToken, phoneNumberId)` - Get business profile
 
-#### **EmbeddedSignupService**: Complete OAuth Flow Handler
-- `handleSignupFlow(authorizationCode, organizationId)` - Complete 10-step signup process:
-  1. Exchange authorization code for access token
-  2. Debug token and extract WABA/App IDs
-  3. Get phone number details from WABA
-  4. Check phone number verification status
-  5. Check WABA account review status
-  6. Register phone number with WhatsApp
-  7. Get business profile information
-  8. Subscribe app to WABA webhooks
-  9. Set organization-specific callback URL
-  10. Store all metadata and sync templates
+#### **WhatsAppManualSetupService**: Manual Configuration Handler
+- `validateManualSetup(credentials)` - Validate 4 required fields:
+  1. access_token (required)
+  2. app_id (required) 
+  3. phone_number_id (required)
+  4. waba_id (required)
+- `setupManualConfiguration(organizationId, credentials)` - Setup process:
+  1. Validate access token with Facebook API
+  2. Verify phone number ID belongs to WABA
+  3. Get phone number status and details
+  4. Get account review status
+  5. Fetch business profile data
+  6. Sync message templates
+  7. Store all metadata in organization
+- `refreshConfiguration(organizationId)` - Re-fetch data from Facebook
+- `updateAccessToken(organizationId, newToken)` - Update token only
 
 #### **WhatsAppService**: Message & Template Management
 - **Messaging**: `sendMessage()`, `sendTemplateMessage()`, `sendMedia()`
@@ -152,17 +161,21 @@ CREATE TABLE whatsapp_contacts (
 - **Business Profile**: `getBusinessProfile()`, `updateBusinessProfile()`
 - **Account Management**: `getPhoneNumberStatus()`, `getAccountReviewStatus()`
 
-### 2.2 API Endpoints (Matching Laravel Routes)
+### 2.2 API Endpoints (Manual Configuration)
 ```
-# OAuth Flow
-GET/POST /api/whatsapp/exchange-code - Complete embedded signup
-POST /api/admin/whatsapp/setup - Store system credentials
-PUT /api/admin/whatsapp/setup - Update system configuration
+# Manual Setup Flow
+POST /api/whatsapp/setup/:orgId - Store manual WhatsApp configuration
+POST /api/whatsapp/settings/:orgId/refresh - Refresh data from Facebook
+POST /api/whatsapp/settings/:orgId/token - Update access token only
 
 # Organization Settings  
 GET /api/whatsapp/settings/:orgId - Get WhatsApp configuration
 PUT /api/whatsapp/settings/:orgId - Update configuration
 POST /api/whatsapp/business-profile/:orgId - Update business profile
+
+# Status & Validation
+GET /api/whatsapp/status/:orgId - Get account status and health
+GET /api/whatsapp/validate/:orgId - Validate current configuration
 
 # Webhooks (Organization-specific)
 GET/POST /api/webhook/whatsapp/:orgIdentifier - Handle webhooks
@@ -192,33 +205,58 @@ APP_URL=https://your-domain.com
 }
 ```
 
-### 2.5 Implementation Status ✅
+### 2.5 Implementation Status 🚧 UPDATE NEEDED
 - [x] MetaService created with complete Graph API integration
-- [x] EmbeddedSignupService implemented with 10-step OAuth flow
+- [ ] Remove EmbeddedSignupService and replace with WhatsAppManualSetupService
 - [x] WhatsAppService created for messaging and template management  
-- [x] WhatsAppController implemented with all API endpoints
+- [ ] Update WhatsAppController with manual setup endpoints
 - [x] Validation schemas created for all requests
 - [x] Routes configured matching Laravel reference patterns
 - [x] TypeScript compilation verified
 - [x] Error handling and response utilities implemented
 
-## **Phase 3: Frontend React Components** 🚧 NEXT
-### 3.1 Core Components Structure
-- **EmbeddedSignupButton**: Trigger Meta's embedded signup flow
-- **WhatsAppSetupWizard**: Multi-step configuration wizard
-- **BusinessProfileForm**: Edit business information
-- **PhoneNumberManager**: Select and verify phone numbers
+## **Phase 3: Frontend React Components** 🚧 UPDATE TO MANUAL
+### 3.1 Core Components Structure (Manual Configuration)
+- **ManualSetupForm**: Form to input 4 required credentials
+- **WhatsAppSetupWizard**: Manual configuration flow with validation
+- **BusinessProfileForm**: Edit business information  
 - **SettingsPanel**: View/edit WhatsApp configuration
+- **WebhookInstructions**: Show webhook URL and setup guide
 
-### 3.2 Setup Flow Components
-1. **Initial Setup**: Display setup requirements and start button
-2. **Meta Signup**: Redirect to Meta's embedded signup
-3. **Callback Processing**: Handle OAuth response
-4. **Phone Selection**: Choose phone number from WABA
-5. **Business Profile**: Configure business information
-6. **Completion**: Confirm setup and test connection
+### 3.2 Manual Setup Flow Components
+1. **Initial Setup**: Display manual setup requirements and benefits
+2. **Credential Form**: Input 4 required fields:
+   - **Access Token**: Long-lived access token from Facebook Developer Console
+   - **App ID**: Facebook App ID from App Settings
+   - **Phone Number ID**: WhatsApp Phone Number ID from WhatsApp Manager
+   - **WABA ID**: WhatsApp Business Account ID from WhatsApp Manager
+3. **Validation**: Real-time validation with Facebook API
+4. **Configuration**: Auto-fetch business profile and account data
+5. **Webhook Setup**: Display webhook URL and configuration instructions
+6. **Completion**: Confirm setup and test messaging
 
-### 3.3 Required Dependencies
+### 3.3 Required Credentials Guide
+**Where to find each credential:**
+
+1. **Access Token** (`access_token`):
+   - Go to [Facebook Developer Console](https://developers.facebook.com/apps)
+   - Select your app → WhatsApp → API Setup
+   - Generate a permanent access token (not temporary)
+
+2. **App ID** (`app_id`):
+   - Facebook Developer Console → App Settings → Basic
+   - Copy the "App ID" value
+
+3. **Phone Number ID** (`phone_number_id`):
+   - Go to [WhatsApp Manager](https://business.facebook.com/wa/manage/home)
+   - Select your phone number → Settings
+   - Copy the "Phone Number ID"
+
+4. **WABA ID** (`waba_id`):
+   - WhatsApp Manager → Account Settings
+   - Copy the "WhatsApp Business Account ID"
+
+### 3.4 Required Dependencies
 ```json
 {
   "@types/react": "^18.0.0",

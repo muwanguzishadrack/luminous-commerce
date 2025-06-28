@@ -23,26 +23,60 @@ const router = Router();
 const whatsappController = new WhatsAppController();
 
 // =====================
-// EMBEDDED SIGNUP ROUTES
+// MANUAL SETUP ROUTES
 // =====================
 
 /**
- * Handle OAuth exchange code from Meta embedded signup
- * This endpoint receives the authorization code from Facebook's embedded signup flow
- * GET/POST /api/whatsapp/exchange-code?code=xxx&state=xxx
+ * Setup WhatsApp manually with user-provided credentials
+ * POST /api/whatsapp/setup/:orgId
  */
-router.get('/exchange-code', 
+router.post('/setup/:orgId',
   authenticate,
   requireOrganization,
-  validateQuery(embeddedSignupSchema),
-  whatsappController.handleEmbeddedSignup
+  validateParams(z.object({ orgId: z.string() })),
+  validateSchema(z.object({
+    access_token: z.string().min(1, 'Access token is required'),
+    app_id: z.string().min(1, 'App ID is required'),
+    phone_number_id: z.string().min(1, 'Phone number ID is required'),
+    waba_id: z.string().min(1, 'WABA ID is required')
+  })),
+  whatsappController.setupManualConfiguration
 );
 
-router.post('/exchange-code',
+/**
+ * Refresh WhatsApp configuration data from Facebook
+ * POST /api/whatsapp/settings/:orgId/refresh
+ */
+router.post('/settings/:orgId/refresh',
   authenticate,
   requireOrganization,
-  validateQuery(embeddedSignupSchema),
-  whatsappController.handleEmbeddedSignup
+  validateParams(z.object({ orgId: z.string() })),
+  whatsappController.refreshConfiguration
+);
+
+/**
+ * Update access token only
+ * POST /api/whatsapp/settings/:orgId/token
+ */
+router.post('/settings/:orgId/token',
+  authenticate,
+  requireOrganization,
+  validateParams(z.object({ orgId: z.string() })),
+  validateSchema(z.object({
+    access_token: z.string().min(1, 'Access token is required')
+  })),
+  whatsappController.updateAccessToken
+);
+
+/**
+ * Get webhook configuration for organization
+ * GET /api/whatsapp/webhook-config/:orgId
+ */
+router.get('/webhook-config/:orgId',
+  authenticate,
+  requireOrganization,
+  validateParams(z.object({ orgId: z.string() })),
+  whatsappController.getWebhookConfig
 );
 
 // =====================
