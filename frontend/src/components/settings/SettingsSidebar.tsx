@@ -1,5 +1,5 @@
 import React from 'react'
-import { Settings as SettingsIcon } from 'lucide-react'
+import { Settings as SettingsIcon, MessageSquare } from 'lucide-react'
 
 interface SettingsSidebarProps {
   activeTab: string
@@ -12,6 +12,11 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ activeTab, onTabChang
       id: 'general',
       label: 'General Settings',
       icon: SettingsIcon,
+    },
+    {
+      id: 'whatsapp',
+      label: 'WhatsApp Settings',
+      icon: MessageSquare,
     },
   ]
 

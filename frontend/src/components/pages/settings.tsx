@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import SettingsSidebar from '../settings/SettingsSidebar';
 import GeneralSettings from '../settings/GeneralSettings';
+import WhatsAppSettings from '../settings/WhatsAppSettings';
 
 const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('general');
@@ -9,6 +10,8 @@ const Settings: React.FC = () => {
     switch (activeTab) {
       case 'general':
         return <GeneralSettings />;
+      case 'whatsapp':
+        return <WhatsAppSettings />;
       default:
         return <GeneralSettings />;
     }
