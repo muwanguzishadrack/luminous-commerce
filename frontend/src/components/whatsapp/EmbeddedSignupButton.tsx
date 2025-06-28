@@ -58,8 +58,8 @@ export const EmbeddedSignupButton: React.FC<EmbeddedSignupButtonProps> = ({
         throw new Error('WhatsApp app configuration not found. Please set VITE_WHATSAPP_APP_ID and VITE_WHATSAPP_CONFIG_ID environment variables.');
       }
 
-      // Generate the redirect URL for the current domain
-      const redirectUrl = `${window.location.origin}/whatsapp/callback`;
+      // Generate the redirect URL - use configured URL or fallback to current domain
+      const redirectUrl = import.meta.env.VITE_WHATSAPP_REDIRECT_URL || `${window.location.origin}/whatsapp/callback`;
       
       // Generate state parameter for security (optional)
       const state = `${organization.id}_${Date.now()}`;

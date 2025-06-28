@@ -22,6 +22,7 @@ import {
   CreateTemplate,
   Settings,
 } from './components/pages';
+import { WhatsAppCallback } from './components/whatsapp';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -80,6 +81,9 @@ export default function App() {
           <Route path="/join-organization" element={<JoinOrganizationForm />} />
           <Route path="/forgot-password" element={<ForgotPasswordForm />} />
           <Route path="/reset-password" element={<ResetPasswordForm />} />
+          
+          {/* WhatsApp OAuth Callback - Public Route */}
+          <Route path="/whatsapp/callback" element={<WhatsAppCallback />} />
           
           {/* Protected Routes */}
           <Route 
