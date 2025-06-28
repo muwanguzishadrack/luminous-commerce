@@ -26,7 +26,7 @@ import {
   QUALITY_RATING_COLORS,
   ACCOUNT_STATUS_COLORS
 } from '../../types/whatsapp';
-import { EmbeddedSignupButton } from './EmbeddedSignupButton';
+import { ManualSetupForm } from './ManualSetupForm';
 import { BusinessProfileForm } from './BusinessProfileForm';
 
 interface WhatsAppSetupWizardProps {
@@ -231,24 +231,22 @@ export const WhatsAppSetupWizard: React.FC<WhatsAppSetupWizardProps> = ({
               <div>
                 <h3 className="text-lg font-semibold">Connect Your Account</h3>
                 <p className="text-muted-foreground">
-                  Click the button below to connect your Meta/Facebook account and authorize WhatsApp access.
+                  Enter your WhatsApp Business API credentials to connect your account.
                 </p>
               </div>
             </div>
 
             <div className="flex justify-center">
-              <EmbeddedSignupButton 
-                onSetupStart={() => setIsLoading(true)}
+              <ManualSetupForm 
                 onSetupComplete={handleSetupComplete}
-                size="lg"
               />
             </div>
 
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                You'll be redirected to Meta's secure login page. After authorization, 
-                you'll be brought back here to complete the setup.
+                Enter your WhatsApp Business API credentials to connect your account. 
+                You can find these in your Meta Developer Console and WhatsApp Manager.
               </AlertDescription>
             </Alert>
           </div>

@@ -28,7 +28,7 @@ import {
   ACCOUNT_STATUS_COLORS
 } from '../../types/whatsapp';
 import { BusinessProfileForm } from './BusinessProfileForm';
-import { EmbeddedSignupButton } from './EmbeddedSignupButton';
+import { ManualSetupForm } from './ManualSetupForm';
 
 export const WhatsAppSettingsPanel: React.FC = () => {
   const { organization } = useOrganization();
@@ -139,9 +139,8 @@ export const WhatsAppSettingsPanel: React.FC = () => {
                 Set up WhatsApp Business integration to communicate with your customers directly.
               </p>
             </div>
-            <EmbeddedSignupButton 
+            <ManualSetupForm 
               onSetupComplete={loadWhatsAppData}
-              size="lg"
             />
           </div>
         </CardContent>
@@ -535,9 +534,7 @@ export const WhatsAppSettingsPanel: React.FC = () => {
                   <p className="text-sm text-muted-foreground mb-3">
                     This will disconnect your current WhatsApp Business account and start the setup process again.
                   </p>
-                  <EmbeddedSignupButton 
-                    variant="outline"
-                    className="border-red-200 text-red-600 hover:bg-red-50"
+                  <ManualSetupForm 
                     onSetupComplete={loadWhatsAppData}
                   />
                 </div>
